@@ -1,0 +1,433 @@
+## Confluence User Macro Template for JIRA Grid
+## Macro Name: jira-grid
+## Macro Title: JIRA Issues Grid
+## Description: Display JIRA issues in a responsive grid format using JQL queries
+## Categories: External Content
+## Icon URL: /download/resources/confluence.extra.jira/images/icons/jira-16.png
+## Documentation URL: #
+##
+## Parameters:
+## - jql (required): JQL query to execute
+## - fields (optional): Comma-separated list of fields to display
+## - maxResults (optional): Maximum number of results (default: 25)
+## - title (optional): Custom title for the grid
+## - baseUrl (optional): JIRA base URL (if different from default)
+## - username (optional): JIRA username for authentication
+## - apiToken (optional): JIRA API token for authentication
+
+## Velocity template starts here
+<div id="jira-macro-$!{helper.renderConfluenceMacroId()}" class="jira-macro-wrapper"></div>
+
+<style>
+.jira-grid-container {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    background: #fff;
+}
+
+.jira-grid-header {
+    background: linear-gradient(135deg, #0052CC, #0065FF);
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.jira-grid-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.jira-grid-count {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.jira-grid-controls {
+    padding: 16px 20px;
+    background: #f5f6fa;
+    border-bottom: 1px solid #e1e5e9;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.jira-search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.jira-refresh-btn {
+    padding: 8px 16px;
+    background: #0052CC;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.jira-grid-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.jira-grid-table th {
+    background: #f8f9fa;
+    color: #42526E;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 2px solid #e1e5e9;
+    cursor: pointer;
+}
+
+.jira-grid-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f2f4;
+}
+
+.jira-grid-table tr:hover {
+    background: #f8f9ff;
+}
+
+.jira-issue-key {
+    font-weight: 600;
+    color: #0052CC;
+    text-decoration: none;
+}
+
+.jira-issue-key:hover {
+    text-decoration: underline;
+}
+
+.jira-status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.jira-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6B778C;
+}
+
+.jira-error {
+    background: #ffebee;
+    color: #c62828;
+    padding: 16px 20px;
+    border-left: 4px solid #f44336;
+    margin: 16px 20px;
+    border-radius: 4px;
+}
+
+.jira-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6B778C;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .jira-grid-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .jira-search-input {
+        min-width: auto;
+    }
+    
+    .jira-grid-table {
+        font-size: 12px;
+    }
+}
+</style>
+
+<script>
+(function() {
+    const macroId = '$!{helper.renderConfluenceMacroId()}';
+    const containerId = 'jira-macro-' + macroId;
+    
+    // Configuration from macro parameters
+    const config = {
+        jql: '$!{paramjql}' || 'project IS NOT EMPTY AND status != "Done"',
+        fields: ('$!{paramfields}' || 'key,summary,status,assignee,priority').split(',').map(f => f.trim()),
+        maxResults: parseInt('$!{parammaxResults}' || '25'),
+        title: '$!{paramtitle}' || 'JIRA Issues',
+        baseUrl: '$!{parambaseUrl}' || window.location.protocol + '//' + window.location.hostname + (window.location.port ? ':' + window.location.port : ''),
+        username: '$!{paramusername}' || '',
+        apiToken: '$!{paramapiToken}' || ''
+    };
+    
+    const FIELD_DISPLAY_NAMES = {
+        'key': 'Issue Key',
+        'summary': 'Summary',
+        'status': 'Status',
+        'assignee': 'Assignee',
+        'priority': 'Priority',
+        'updated': 'Updated',
+        'created': 'Created',
+        'reporter': 'Reporter',
+        'issuetype': 'Issue Type',
+        'project': 'Project'
+    };
+
+    const STATUS_COLORS = {
+        'To Do': '#42526E',
+        'In Progress': '#0052CC',
+        'Done': '#00875A',
+        'Closed': '#00875A',
+        'Open': '#DE350B',
+        'Resolved': '#00875A',
+        'Reopened': '#DE350B'
+    };
+
+    class ConfluenceJiraMacro {
+        constructor() {
+            this.container = document.getElementById(containerId);
+            this.issues = [];
+            this.filteredIssues = [];
+            this.init();
+        }
+
+        init() {
+            this.render();
+            this.loadIssues();
+        }
+
+        render() {
+            this.container.innerHTML = `
+                <div class="jira-grid-container">
+                    <div class="jira-grid-header">
+                        <h3 class="jira-grid-title">${config.title}</h3>
+                        <div class="jira-grid-count" id="jira-count-${macroId}">Loading...</div>
+                    </div>
+                    <div class="jira-grid-controls">
+                        <input type="text" class="jira-search-input" placeholder="Search issues..." id="jira-search-${macroId}">
+                        <button class="jira-refresh-btn" id="jira-refresh-${macroId}">↻ Refresh</button>
+                    </div>
+                    <div id="jira-content-${macroId}">
+                        <div class="jira-loading">Loading JIRA issues...</div>
+                    </div>
+                </div>
+            `;
+
+            this.attachEventListeners();
+        }
+
+        attachEventListeners() {
+            const searchInput = document.getElementById(`jira-search-${macroId}`);
+            const refreshBtn = document.getElementById(`jira-refresh-${macroId}`);
+            
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    this.filterIssues(e.target.value);
+                });
+            }
+            
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', () => {
+                    this.loadIssues();
+                });
+            }
+        }
+
+        async loadIssues() {
+            try {
+                this.showLoading();
+                const response = await this.fetchJiraData();
+                this.issues = response.issues || [];
+                this.filteredIssues = [...this.issues];
+                this.updateCount();
+                this.renderTable();
+            } catch (error) {
+                this.showError(error.message);
+            }
+        }
+
+        async fetchJiraData() {
+            const url = `${config.baseUrl}/rest/api/3/search`;
+            const params = new URLSearchParams({
+                jql: config.jql,
+                fields: config.fields.join(','),
+                maxResults: config.maxResults
+            });
+
+            // For Confluence Cloud, you might need to use different auth
+            const headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            };
+
+            // Add authentication if provided
+            if (config.username && config.apiToken) {
+                const credentials = btoa(`${config.username}:${config.apiToken}`);
+                headers['Authorization'] = `Basic ${credentials}`;
+            }
+
+            const response = await fetch(`${url}?${params}`, {
+                method: 'GET',
+                headers: headers
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return await response.json();
+        }
+
+        renderTable() {
+            const content = document.getElementById(`jira-content-${macroId}`);
+            
+            if (this.filteredIssues.length === 0) {
+                content.innerHTML = '<div class="jira-empty">No issues found matching your criteria.</div>';
+                return;
+            }
+
+            content.innerHTML = `
+                <table class="jira-grid-table">
+                    <thead>
+                        <tr>
+                            ${config.fields.map(field => `
+                                <th>${FIELD_DISPLAY_NAMES[field] || field}</th>
+                            `).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${this.filteredIssues.map(issue => this.renderIssueRow(issue)).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        renderIssueRow(issue) {
+            return `
+                <tr>
+                    ${config.fields.map(field => `
+                        <td>${this.renderFieldValue(issue, field)}</td>
+                    `).join('')}
+                </tr>
+            `;
+        }
+
+        renderFieldValue(issue, field) {
+            const fieldValue = this.getFieldValue(issue, field);
+            
+            switch (field) {
+                case 'key':
+                    return `<a href="${config.baseUrl}/browse/${fieldValue}" target="_blank" class="jira-issue-key">${fieldValue}</a>`;
+                case 'status':
+                    const statusColor = STATUS_COLORS[fieldValue] || '#42526E';
+                    return `<span class="jira-status-badge" style="background-color: ${statusColor}">${fieldValue}</span>`;
+                case 'summary':
+                    return this.truncateText(fieldValue, 80);
+                case 'updated':
+                case 'created':
+                    return this.formatDate(fieldValue);
+                default:
+                    return fieldValue || '';
+            }
+        }
+
+        getFieldValue(issue, field) {
+            const fields = issue.fields;
+            
+            switch (field) {
+                case 'key': return issue.key;
+                case 'assignee': return fields.assignee ? fields.assignee.displayName : 'Unassigned';
+                case 'reporter': return fields.reporter ? fields.reporter.displayName : '';
+                case 'status': return fields.status ? fields.status.name : '';
+                case 'priority': return fields.priority ? fields.priority.name : '';
+                case 'issuetype': return fields.issuetype ? fields.issuetype.name : '';
+                case 'project': return fields.project ? fields.project.name : '';
+                default: return fields[field] || '';
+            }
+        }
+
+        filterIssues(searchTerm) {
+            if (!searchTerm.trim()) {
+                this.filteredIssues = [...this.issues];
+            } else {
+                const term = searchTerm.toLowerCase();
+                this.filteredIssues = this.issues.filter(issue => {
+                    return config.fields.some(field => {
+                        const value = this.getFieldValue(issue, field).toString().toLowerCase();
+                        return value.includes(term);
+                    });
+                });
+            }
+            
+            this.updateCount();
+            this.renderTable();
+        }
+
+        updateCount() {
+            const countElement = document.getElementById(`jira-count-${macroId}`);
+            if (countElement) {
+                countElement.textContent = `${this.filteredIssues.length} issues`;
+            }
+        }
+
+        showLoading() {
+            const content = document.getElementById(`jira-content-${macroId}`);
+            if (content) {
+                content.innerHTML = '<div class="jira-loading">Loading JIRA issues...</div>';
+            }
+        }
+
+        showError(message) {
+            const content = document.getElementById(`jira-content-${macroId}`);
+            if (content) {
+                content.innerHTML = `<div class="jira-error"><strong>Error:</strong> ${message}</div>`;
+            }
+        }
+
+        truncateText(text, maxLength) {
+            if (!text) return '';
+            text = text.toString();
+            return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+        }
+
+        formatDate(dateString) {
+            if (!dateString) return '';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+    }
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            new ConfluenceJiraMacro();
+        });
+    } else {
+        new ConfluenceJiraMacro();
+    }
+})();
+</script>

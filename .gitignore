@@ -1,0 +1,68 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data  
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# nyc test coverage
+.nyc_output
+
+# node_modules (if using npm/yarn)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Sensitive information (NEVER commit these)
+config/secrets.js
+config/local.js
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# API keys or tokens (example patterns)
+**/config/*token*
+**/config/*key*
+**/config/*secret*
+**/*credentials*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Confluence specific
+atlassian-ide-plugin.xml

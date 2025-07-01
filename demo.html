@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIRA Macro Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f6fa;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 30px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .demo-header h1 {
+            color: #0052CC;
+            margin-bottom: 10px;
+        }
+        
+        .demo-header p {
+            color: #6B778C;
+            font-size: 16px;
+        }
+        
+        .config-panel {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .config-panel h3 {
+            color: #42526E;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        
+        .config-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .config-form label {
+            font-weight: 600;
+            color: #42526E;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .config-form input, .config-form textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        .config-form textarea {
+            resize: vertical;
+            height: 60px;
+        }
+        
+        .config-form .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .demo-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .demo-btn-primary {
+            background: #0052CC;
+            color: white;
+        }
+        
+        .demo-btn-primary:hover {
+            background: #003d99;
+        }
+        
+        .demo-btn-secondary {
+            background: #f4f5f7;
+            color: #42526E;
+            border: 1px solid #ddd;
+        }
+        
+        .demo-btn-secondary:hover {
+            background: #ebecf0;
+        }
+        
+        .example-scenarios {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .scenario-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .scenario-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .scenario-card h4 {
+            margin-top: 0;
+            color: #0052CC;
+        }
+        
+        .scenario-card p {
+            color: #6B778C;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .scenario-jql {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+        
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #856404;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            color: #856404;
+        }
+        
+        .instructions code {
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', monospace;
+        }
+        
+        @media (max-width: 768px) {
+            .config-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .demo-buttons {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-header">
+        <h1>🎯 JIRA Issues Grid - Interactive Demo</h1>
+        <p>Test the Confluence JIRA macro with your own JIRA instance</p>
+    </div>
+    
+    <div class="instructions">
+        <h3>📋 Setup Instructions</h3>
+        <ol>
+            <li>Enter your JIRA instance details in the configuration panel below</li>
+            <li>Generate an API token from your JIRA profile (<code>Profile → Security → API tokens</code>)</li>
+            <li>Choose a scenario or enter custom JQL query</li>
+            <li>Click "Load Issues" to test the macro</li>
+        </ol>
+        <p><strong>Note:</strong> This demo runs in your browser and may encounter CORS restrictions. For production use, deploy as a Confluence User Macro.</p>
+    </div>
+    
+    <div class="config-panel">
+        <h3>⚙️ JIRA Configuration</h3>
+        <div class="config-form">
+            <div>
+                <label for="baseUrl">JIRA Base URL</label>
+                <input type="url" id="baseUrl" placeholder="https://your-domain.atlassian.net" value="">
+            </div>
+            <div>
+                <label for="username">Username (Email)</label>
+                <input type="email" id="username" placeholder="your-email@domain.com" value="">
+            </div>
+            <div>
+                <label for="apiToken">API Token</label>
+                <input type="password" id="apiToken" placeholder="Your JIRA API token" value="">
+            </div>
+            <div>
+                <label for="maxResults">Max Results</label>
+                <input type="number" id="maxResults" value="25" min="1" max="100">
+            </div>
+            <div class="full-width">
+                <label for="jqlQuery">JQL Query</label>
+                <textarea id="jqlQuery" placeholder="project = 'DEMO' AND status != 'Done'">project IS NOT EMPTY AND status != "Done"</textarea>
+            </div>
+            <div class="full-width">
+                <label for="fields">Fields to Display (comma-separated)</label>
+                <input type="text" id="fields" value="key,summary,status,assignee,priority" placeholder="key,summary,status,assignee,priority">
+            </div>
+            <div class="full-width">
+                <label for="title">Grid Title</label>
+                <input type="text" id="title" value="JIRA Issues Demo" placeholder="Custom title for the grid">
+            </div>
+        </div>
+        
+        <div class="demo-buttons">
+            <button class="demo-btn demo-btn-primary" onclick="loadIssues()">🚀 Load Issues</button>
+            <button class="demo-btn demo-btn-secondary" onclick="clearConfig()">🗑️ Clear Config</button>
+            <button class="demo-btn demo-btn-secondary" onclick="testConnection()">🔍 Test Connection</button>
+        </div>
+    </div>
+    
+    <div class="config-panel">
+        <h3>💡 Example Scenarios</h3>
+        <div class="example-scenarios">
+            <div class="scenario-card" onclick="loadScenario('personal')">
+                <h4>👤 My Issues</h4>
+                <p>View issues assigned to you that are currently active</p>
+                <div class="scenario-jql">assignee = currentUser() AND status != "Done"</div>
+            </div>
+            
+            <div class="scenario-card" onclick="loadScenario('recent')">
+                <h4>🕒 Recent Updates</h4>
+                <p>Issues updated in the last 7 days across all projects</p>
+                <div class="scenario-jql">updated >= "-7d"</div>
+            </div>
+            
+            <div class="scenario-card" onclick="loadScenario('high-priority')">
+                <h4>🔥 High Priority</h4>
+                <p>Critical and high priority issues that need attention</p>
+                <div class="scenario-jql">priority in ("Critical", "High") AND status != "Done"</div>
+            </div>
+            
+            <div class="scenario-card" onclick="loadScenario('bugs')">
+                <h4>🐛 Open Bugs</h4>
+                <p>All unresolved bugs across projects</p>
+                <div class="scenario-jql">issuetype = "Bug" AND status != "Done"</div>
+            </div>
+            
+            <div class="scenario-card" onclick="loadScenario('team')">
+                <h4>👥 Team Work</h4>
+                <p>Issues assigned to team members in progress</p>
+                <div class="scenario-jql">assignee is not EMPTY AND status = "In Progress"</div>
+            </div>
+            
+            <div class="scenario-card" onclick="loadScenario('overdue')">
+                <h4>⚠️ Overdue</h4>
+                <p>Issues that have passed their due date</p>
+                <div class="scenario-jql">duedate < now() AND status != "Done"</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JIRA Macro Container -->
+    <div id="jira-macro-demo"></div>
+    
+    <!-- Include the JIRA macro scripts -->
+    <script src="config.js"></script>
+    <script src="jira-macro.js"></script>
+    
+    <script>
+        // Demo-specific JavaScript
+        let currentMacro = null;
+        
+        function loadScenario(scenario) {
+            const scenarios = {
+                'personal': {
+                    jql: 'assignee = currentUser() AND status != "Done"',
+                    title: '👤 My Active Issues',
+                    fields: 'key,summary,status,priority,updated'
+                },
+                'recent': {
+                    jql: 'updated >= "-7d"',
+                    title: '🕒 Recently Updated Issues',
+                    fields: 'key,summary,status,assignee,updated'
+                },
+                'high-priority': {
+                    jql: 'priority in ("Critical", "High") AND status != "Done"',
+                    title: '🔥 High Priority Issues',
+                    fields: 'key,summary,status,assignee,priority'
+                },
+                'bugs': {
+                    jql: 'issuetype = "Bug" AND status != "Done"',
+                    title: '🐛 Open Bugs',
+                    fields: 'key,summary,status,assignee,priority,components'
+                },
+                'team': {
+                    jql: 'assignee is not EMPTY AND status = "In Progress"',
+                    title: '👥 Team Work in Progress',
+                    fields: 'key,summary,status,assignee,updated'
+                },
+                'overdue': {
+                    jql: 'duedate < now() AND status != "Done"',
+                    title: '⚠️ Overdue Issues',
+                    fields: 'key,summary,status,assignee,duedate,priority'
+                }
+            };
+            
+            const config = scenarios[scenario];
+            if (config) {
+                document.getElementById('jqlQuery').value = config.jql;
+                document.getElementById('title').value = config.title;
+                document.getElementById('fields').value = config.fields;
+                
+                // Scroll to configuration
+                document.querySelector('.config-panel').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+        
+        function loadIssues() {
+            const config = getConfigFromForm();
+            
+            // Validate required fields
+            if (!config.baseUrl || !config.username || !config.apiToken) {
+                alert('Please fill in all required JIRA configuration fields (Base URL, Username, API Token)');
+                return;
+            }
+            
+            // Update global config
+            JIRA_CONFIG.baseUrl = config.baseUrl;
+            JIRA_CONFIG.username = config.username;
+            JIRA_CONFIG.apiToken = config.apiToken;
+            
+            // Clear existing macro
+            document.getElementById('jira-macro-demo').innerHTML = '';
+            
+            // Create new macro instance
+            currentMacro = new JiraMacro('jira-macro-demo', {
+                jql: config.jql,
+                fields: config.fields.split(',').map(f => f.trim()),
+                maxResults: parseInt(config.maxResults),
+                title: config.title
+            });
+            
+            // Scroll to results
+            setTimeout(() => {
+                document.getElementById('jira-macro-demo').scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        }
+        
+        async function testConnection() {
+            const config = getConfigFromForm();
+            
+            if (!config.baseUrl || !config.username || !config.apiToken) {
+                alert('Please fill in all required JIRA configuration fields');
+                return;
+            }
+            
+            try {
+                const credentials = btoa(`${config.username}:${config.apiToken}`);
+                const response = await fetch(`${config.baseUrl}/rest/api/3/myself`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Basic ${credentials}`,
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    alert(`✅ Connection successful!\nWelcome, ${user.displayName} (${user.emailAddress})`);
+                } else {
+                    alert(`❌ Connection failed: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                alert(`❌ Connection error: ${error.message}`);
+            }
+        }
+        
+        function clearConfig() {
+            if (confirm('Clear all configuration fields?')) {
+                document.getElementById('baseUrl').value = '';
+                document.getElementById('username').value = '';
+                document.getElementById('apiToken').value = '';
+                document.getElementById('jqlQuery').value = 'project IS NOT EMPTY AND status != "Done"';
+                document.getElementById('fields').value = 'key,summary,status,assignee,priority';
+                document.getElementById('title').value = 'JIRA Issues Demo';
+                document.getElementById('maxResults').value = '25';
+                
+                // Clear macro display
+                document.getElementById('jira-macro-demo').innerHTML = '';
+            }
+        }
+        
+        function getConfigFromForm() {
+            return {
+                baseUrl: document.getElementById('baseUrl').value.trim(),
+                username: document.getElementById('username').value.trim(),
+                apiToken: document.getElementById('apiToken').value.trim(),
+                jql: document.getElementById('jqlQuery').value.trim(),
+                fields: document.getElementById('fields').value.trim(),
+                title: document.getElementById('title').value.trim(),
+                maxResults: document.getElementById('maxResults').value
+            };
+        }
+        
+        // Load sample configuration on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // You can pre-populate with sample data for testing
+            // document.getElementById('baseUrl').value = 'https://demo.atlassian.net';
+            // document.getElementById('username').value = 'demo@example.com';
+        });
+    </script>
+</body>
+</html>
