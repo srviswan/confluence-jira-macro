@@ -1,0 +1,34 @@
+{
+  "jira": {
+    "baseUrl": "https://yourcompany.atlassian.net",
+    "username": "your.email@company.com",
+    "apiToken": "your-api-token-here",
+    "defaultJQL": "project = YourProject AND assignee != empty"
+  },
+  "settings": {
+    "defaultDateRange": "thisWeek",
+    "maxResults": 1000,
+    "epicLinkField": "customfield_10014",
+    "includeSubtasks": true,
+    "timezone": "UTC"
+  },
+  "output": {
+    "includeWorkDescription": true,
+    "groupByFeature": true,
+    "groupByAssignee": true,
+    "createCharts": true,
+    "autoFormat": true
+  },
+  "advanced": {
+    "customFields": {
+      "storyPoints": "customfield_10016",
+      "sprint": "customfield_10020",
+      "components": "components"
+    },
+    "filters": {
+      "excludeSystemUsers": true,
+      "minimumTimeLogged": 0.1,
+      "statusesToInclude": ["Done", "In Progress", "To Do", "Closed"]
+    }
+  }
+}

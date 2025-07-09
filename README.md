@@ -29,10 +29,19 @@ confluence-jira-macro/
 ├── setup-instructions.md         # Detailed setup guide
 ├── example-usage.md              # Usage examples and JQL queries
 ├── demo.html                     # Interactive demo page
-└── python-api/                   # Python-based data aggregation
-    ├── jira_data_aggregator.py   # Main aggregation script
-    ├── field_inspector.py        # JIRA field discovery utility
-    ├── example_usage.py          # Usage examples
+├── python-api/                   # Python-based data aggregation
+│   ├── jira_data_aggregator.py   # Main aggregation script
+│   ├── field_inspector.py        # JIRA field discovery utility
+│   ├── example_usage.py          # Usage examples
+│   ├── integration_demo.py       # Demo with simulated data
+│   ├── requirements.txt          # Python dependencies
+│   └── README.md                 # Python API documentation
+└── excel-api/                    # Excel VBA-based JIRA connector
+    ├── JiraApiModule.bas         # Main VBA API module
+    ├── WorksheetSetup.bas        # Excel worksheet configuration
+    ├── CreateWorkbook.vbs        # Automated workbook creation
+    ├── jira-config-template.json # Configuration template
+    └── README.md                 # Excel setup and usage guide
     ├── config.json.template      # Configuration template
     ├── requirements.txt          # Python dependencies
     ├── run_aggregator.sh         # Batch execution script
