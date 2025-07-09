@@ -1,0 +1,7 @@
+{
+    "base_url": "https://your-domain.atlassian.net",
+    "username": "your-email@domain.com",
+    "api_token": "your-api-token",
+    "default_jql": "project = \"YOUR_PROJECT\" AND status != \"Done\"",
+    "max_results": 1000
+}

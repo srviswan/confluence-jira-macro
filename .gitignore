@@ -66,3 +66,46 @@ temp/
 
 # Confluence specific
 atlassian-ide-plugin.xml
+
+# Python-specific
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+PIPFILE.lock
+
+# Python virtual environments
+python-api/venv/
+python-api/.venv/
+ENV/
+env/
+.env
+
+# Python JIRA config files (contain sensitive credentials)
+python-api/config.json
+python-api/sample_config.json
+python-api/test_config.json
+
+# Python generated reports and temporary files
+python-api/*.xlsx
+python-api/demo_*.xlsx
+python-api/jira_report_*.xlsx
+python-api/weekly_*.xlsx

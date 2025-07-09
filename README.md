@@ -14,20 +14,29 @@ A comprehensive JavaScript-based Confluence macro that integrates with JIRA REST
 - **Secure Authentication**: Basic auth with API tokens
 - **Interactive Demo**: Test the macro before deployment
 - **Multiple Deployment Options**: User macro, HTML macro, or standalone
+- **Python API**: Advanced data aggregation and time tracking analysis
 
 ## Project Structure
 
 ```
 confluence-jira-macro/
-├── README.md                  # Main documentation
-├── config.js                  # Configuration settings
-├── jira-macro.css            # Styling for the grid
-├── jira-macro.js             # Core JavaScript functionality
-├── jira-macro.html           # Standalone HTML version
-├── user-macro-template.vm    # Confluence User Macro template
-├── setup-instructions.md     # Detailed setup guide
-├── example-usage.md          # Usage examples and JQL queries
-└── demo.html                 # Interactive demo page
+├── README.md                      # Main documentation
+├── config.js                      # Configuration settings
+├── jira-macro.css                # Styling for the grid
+├── jira-macro.js                 # Core JavaScript functionality
+├── jira-macro.html               # Standalone HTML version
+├── user-macro-template.vm        # Confluence User Macro template
+├── setup-instructions.md         # Detailed setup guide
+├── example-usage.md              # Usage examples and JQL queries
+├── demo.html                     # Interactive demo page
+└── python-api/                   # Python-based data aggregation
+    ├── jira_data_aggregator.py   # Main aggregation script
+    ├── field_inspector.py        # JIRA field discovery utility
+    ├── example_usage.py          # Usage examples
+    ├── config.json.template      # Configuration template
+    ├── requirements.txt          # Python dependencies
+    ├── run_aggregator.sh         # Batch execution script
+    └── README.md                 # Python API documentation
 ```
 
 ## Quick Start
@@ -48,6 +57,35 @@ confluence-jira-macro/
 1. Use `jira-macro.html` for simple HTML macro embedding
 2. Update configuration section with your JIRA details
 3. Paste into Confluence HTML macro or page source
+
+### Option 4: Python API (Advanced Analytics)
+
+**NEW!** The Python API provides advanced data aggregation and time tracking analysis capabilities:
+
+#### Key Features:
+- **Time Tracking Aggregation**: Summarizes estimated, remaining, and spent hours
+- **Multi-Level Grouping**: Groups by Feature Link (Epic) and Assignee
+- **Progress Analysis**: Calculates completion percentages and project health
+- **Excel Reports**: Generates comprehensive reports with multiple sheets
+- **Batch Processing**: Handles large datasets efficiently
+- **Field Discovery**: Utility to inspect available JIRA fields
+
+#### Quick Start:
+```bash
+cd python-api
+./run_aggregator.sh help          # Show available options
+./run_aggregator.sh test          # Test JIRA connection
+./run_aggregator.sh console       # View summary in console
+./run_aggregator.sh excel         # Generate Excel report
+```
+
+#### Use Cases:
+- **Project Managers**: Track progress across features and team members
+- **Scrum Masters**: Generate sprint and team velocity reports
+- **Stakeholders**: Get executive summaries with completion metrics
+- **Resource Planning**: Analyze workload distribution and capacity
+
+See `python-api/README.md` for detailed documentation and examples.
 
 ## Configuration
 
